@@ -16,11 +16,11 @@ const ASSETS = [
   './js/viz.js',
   './js/wires.js',
   './favicon.ico',
-  // Google Fonts — cache on first fetch
+  './icons/icon-192.png',
+  './icons/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap'
 ];
 
-// Install: pre-cache all app assets
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(ASSETS))
@@ -28,7 +28,6 @@ self.addEventListener('install', e => {
   self.skipWaiting();
 });
 
-// Activate: remove old caches
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -38,13 +37,11 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: cache-first, fall back to network
 self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(response => {
-        // Cache valid responses from same origin + fonts
         if (
           response.ok &&
           (e.request.url.startsWith(self.location.origin) ||
@@ -57,7 +54,6 @@ self.addEventListener('fetch', e => {
         return response;
       });
     }).catch(() => {
-      // Offline fallback — return cached index.html for navigation requests
       if (e.request.mode === 'navigate') {
         return caches.match('./index.html');
       }
