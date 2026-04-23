@@ -1,5 +1,6 @@
         renderWireList();
         if (typeof updateEffHt === 'function') updateEffHt();
+        if (typeof updateEffHt === 'function') updateEffHt();
 
         document.addEventListener('click', () => {
             document.querySelectorAll('.wire-color-menu.show').forEach(m => m.classList.remove('show'));
