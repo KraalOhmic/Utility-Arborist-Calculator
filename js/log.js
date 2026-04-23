@@ -1,4 +1,4 @@
-﻿        // ── LOG ──
+        // ── LOG ──
         function toggleLogItem(idx) {
             const el = document.getElementById('log-entry-' + idx);
             if (el) el.classList.toggle('expanded');
@@ -8,10 +8,16 @@
             document.getElementById('log-count').textContent = logEntries.length + ' Entr' + (logEntries.length === 1 ? 'y' : 'ies');
             const list = document.getElementById('log-list');
             if (!logEntries.length) { list.innerHTML = '<div class="log-empty">No checks logged yet</div>'; return; }
-            list.innerHTML = logEntries.map((e, idx) => {
+            try { list.innerHTML = logEntries.map((e, idx) => {
                 const st = e.overallClear ? 'clear' : (e.overallWarn ? 'warn' : 'strike');
                 const verdict = e.overallClear ? 'ALL CLEAR' : (e.overallWarn ? 'MARGINAL' : 'STRIKE RISK');
-                const time = e.ts ? e.ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                const time = (function() {
+                    try {
+                        if (!e.ts) return '';
+                        const h = e.ts.getHours(), m = e.ts.getMinutes();
+                        return (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m + (h < 12 ? 'am' : 'pm');
+                    } catch(ex) { return ''; }
+                })();
                 const sagPct = Math.round(4 * (e.t || 0.5) * (1 - (e.t || 0.5)) * 100);
                 return `<div class="log-item" id="log-entry-${idx}">
               <div class="log-item-top" onclick="toggleLogItem(${idx})">
@@ -41,7 +47,7 @@
                 <button class="log-reload-btn" onclick="reloadEntry(${idx})">↩ Reload into calculator</button>
               </div>
             </div>`;
-            }).join('');
+            }).join(''); } catch(err) { list.innerHTML = '<div class="log-empty" style="color:red">Log render error: ' + err.message + '</div>'; }
         }
 
         function clearLog() { logEntries = []; updateLog(); }
