@@ -1,4 +1,4 @@
-﻿        // ── WIRE LIST ──
+        // ── WIRE LIST ──
         function renderWireList() {
             document.getElementById('wire-list').innerHTML = wires.map((w, i) => `
         <div class="wire-row">
@@ -10,8 +10,9 @@
           </div>
           <div class="wire-row-fields">
             <div class="wire-row-field"><label>Name</label><input type="text" id="w-name-${i}" value="${escHtml(w.name)}"></div>
-            <div class="wire-row-field"><label>Height ft</label><input type="number" id="w-ht-${i}" value="${w.ht}" inputmode="decimal"></div>
-            ${/neutral/i.test(String(w.name || '')) ? '' : `<div class="wire-row-field"><label>Sag ft</label><input type="number" id="w-sag-${i}" value="${w.sag}" inputmode="decimal"></div>`}
+            <div class="wire-row-field"><label>Height ft</label><input type="number" id="w-ht-${i}" value="${w.ht}" inputmode="decimal" oninput="updateEffHt()"></div>
+            ${/neutral/i.test(String(w.name || '')) ? '' : `<div class="wire-row-field"><label>Sag ft</label><input type="number" id="w-sag-${i}" value="${w.sag}" inputmode="decimal" oninput="updateEffHt()"></div>`}
+            <div class="wire-row-field"><label style="color:var(--accent2)">@ Tree</label><div id="w-effht-${i}" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent2);padding:6px 2px;min-width:36px">—</div></div>
             <div class="wire-row-field"><label>Min Clr ft</label><input type="number" id="w-clr-${i}" value="${typeof w.minClr === 'number' ? w.minClr : DEFAULT_MIN_CLEARANCE_FT}" inputmode="decimal" min="0" step="0.1"></div>
             <div class="wire-row-field"><label>Type</label><select id="w-type-${i}" onchange="onWireTypeChange(${i})">${CONDUCTOR_PRESETS.map(p => `<option value="${p.id}" ${p.id === (w.type || DEFAULT_CONDUCTOR) ? 'selected' : ''}>${p.label}</option>`).join('')}</select></div>
           </div>
@@ -85,3 +86,19 @@
             else lbl.textContent = 'severe';
         }
 
+
+        // ── EFFECTIVE HEIGHT DISPLAY ──
+        function updateEffHt() {
+            const t = parseFloat(document.getElementById('span-pos')?.value) || 0.5;
+            const sagFactor = 4 * t * (1 - t);
+            wires.forEach((w, i) => {
+                const htEl = document.getElementById('w-ht-' + i);
+                const sagEl = document.getElementById('w-sag-' + i);
+                const effEl = document.getElementById('w-effht-' + i);
+                if (!effEl) return;
+                const ht = parseFloat(htEl?.value ?? w.ht);
+                const sag = /neutral/i.test(String(w.name || '')) ? 0 : parseFloat(sagEl?.value ?? w.sag) || 0;
+                const effHt = ht - sag * sagFactor;
+                effEl.textContent = Number.isFinite(effHt) ? effHt.toFixed(1) + 'ft' : '—';
+            });
+        }
