@@ -72,7 +72,12 @@
             if (isNaN(n)) n = 0.5;
             n = Math.max(0.1, Math.min(0.9, n));
             const input = document.getElementById('span-pos');
-            if (input) input.value = n.toFixed(1);
+            // Only rewrite on blur to avoid interfering while typing
+            if (input && document.activeElement !== input) {
+                input.value = n.toFixed(1);
+            } else if (input) {
+                input.value = n.toFixed(1);
+            }
         }
 
         function updateLean(v) {
