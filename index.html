@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -241,6 +241,7 @@ window.addEventListener('unhandledrejection', function(e) {
             <canvas id="vizCanvas"></canvas>
             <canvas id="isoCanvas" style="display:none;width:100%;background:var(--bg)"></canvas>
             <canvas id="mdrCanvas" style="display:none;width:100%;background:var(--bg)"></canvas>
+                <div id="mdr-canvas-legend" style="display:none;flex-wrap:wrap;gap:10px 16px;padding:8px 4px 0;margin-top:4px"></div>
 
             <div class="viz-legend" id="viz-legend" style="display:none"></div>
             <div class="viz-stats" id="viz-stats" style="display:none">
@@ -291,7 +292,7 @@ window.addEventListener('unhandledrejection', function(e) {
         </div>
 
         <div class="btn-row">
-            <button class="btn-run" onclick="runMdrForecast()">Run Forecast</button>
+            <button class="btn-run" onclick="runMdrForecast()">Estimate Clearance</button>
             <button class="btn-reset" onclick="resetMdrForecast()">Reset</button>
         </div>
         <div id="mdr-validation" class="validation-box" style="display:none"></div>
