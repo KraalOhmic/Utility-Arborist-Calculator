@@ -115,6 +115,7 @@
                 });
             }
             renderWireList();
+            if (typeof updateEffHt === 'function') updateEffHt();
             document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === 0));
             document.querySelectorAll('.pane').forEach((p, i) => p.classList.toggle('active', i === 0));
         }
