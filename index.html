@@ -8,25 +8,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Strike Calc">
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Strike Calc</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./styles.css">
-    <script>
-      // TWA/APK WebView viewport correction
-      // If the device pixel ratio suggests we're being scaled down, correct it
-      (function() {
-        var vp = document.querySelector('meta[name=viewport]');
-        if (!vp) return;
-        var dpr = window.devicePixelRatio || 1;
-        var sw = window.screen.width;
-        // If screen is wider than 420 CSS px at dpr=1, we're in a wide WebView
-        // Force the viewport to match screen width
-        if (sw > 420 && dpr >= 2) {
-          vp.content = 'width=' + sw + ', initial-scale=' + (1/dpr).toFixed(4) + ', maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-        }
-      })();
-    </script>
 </head>
 <body>
 <div id="debug-errors" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#ff0040;color:white;font-family:monospace;font-size:11px;padding:8px;z-index:99999;max-height:40vh;overflow-y:auto;white-space:pre-wrap;"></div>
