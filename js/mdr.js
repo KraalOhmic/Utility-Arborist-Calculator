@@ -1,9 +1,9 @@
-﻿// ── MDR FORECAST ──
+// ── MDR FORECAST ──
 let lastMdrPlot = null;
 
 let mdrTheta = -0.55;
 let mdrPhi = 0.55;
-let mdrZoom = 1.0;
+let mdrZoom = 1.6;
 let mdrPanX = 0;   // world-space pan offset X
 let mdrPanZ = 0;   // world-space pan offset Z (depth axis)
 let mdrDragging = false;
@@ -13,7 +13,7 @@ let mdrLastY = 0;
 function resetMdrView() {
     mdrTheta = -0.55;
     mdrPhi = 0.55;
-    mdrZoom = 1.0;
+    mdrZoom = 1.6;
     mdrPanX = 0;
     mdrPanZ = 0;
 }
@@ -245,7 +245,7 @@ function drawMdrCanvas(plot) {
     const cx3 = hd * 0.3 + mdrPanX;
     const cy3 = 0;
     const cz3 = lineZ + mdrPanZ;
-    const camDist = maxDim * 1.8 / mdrZoom;
+    const camDist = maxDim * 1.1 / mdrZoom;
 
     const camX = cx3 + camDist * Math.cos(mdrPhi) * Math.sin(mdrTheta);
     const camY = cy3 + camDist * Math.sin(mdrPhi);
@@ -393,32 +393,32 @@ function drawMdrCanvas(plot) {
     const lwp = proj(linePointWorst.x, linePointWorst.y, linePointWorst.z);
     const tp = proj(treePoint.x, treePoint.y, treePoint.z);
 
-    ctx.font = '9px JetBrains Mono,monospace';
-    ctx.textAlign = 'left';
-    if (lp) {
-        ctx.fillStyle = 'rgba(143,170,200,0.9)';
-        ctx.fillText('Line point (current)', lp.sx + 8, lp.sy - 8);
+    // Build HTML legend instead of canvas labels
+    const legend = document.getElementById('mdr-canvas-legend');
+    if (legend) {
+        const items = [
+            { color: '#8faac8', dot: true, label: `Line (current) — ${baseRadial.toFixed(1)}ft` },
+        ];
+        if (sagExtra > 0.001) {
+            items.push({ color: '#ff9f1c', dot: true, label: `Line (worst sag) — ${worstRadial.toFixed(1)}ft` });
+        }
+        items.push({ color: '#e8ff47', dot: true, label: 'Tree point' });
+        if (swayVisual > 0.01) {
+            items.push({ color: 'rgba(255,159,28,0.7)', dot: false, dash: true, label: 'Wind sway envelope' });
+        }
+        items.push({ color: '#8faac8', dot: false, label: `Span pos t=${t.toFixed(1)}` });
+        legend.innerHTML = items.map(item => `
+            <div style="display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:9px;color:${item.color};letter-spacing:.06em">
+                ${item.dot
+                    ? `<div style="width:8px;height:8px;border-radius:50%;background:${item.color};flex-shrink:0"></div>`
+                    : item.dash
+                        ? `<div style="width:14px;height:0;border-top:2px dashed ${item.color};flex-shrink:0"></div>`
+                        : `<div style="width:8px;height:8px;flex-shrink:0"></div>`
+                }
+                ${item.label}
+            </div>`).join('');
+        legend.style.display = 'flex';
     }
-    if (lwp && sagExtra > 0.001) {
-        ctx.fillStyle = 'rgba(255,159,28,0.95)';
-        ctx.fillText('Line point (worst sag)', lwp.sx + 8, lwp.sy - 8);
-    }
-    if (tp) {
-        ctx.fillStyle = 'rgba(232,255,71,0.95)';
-        ctx.fillText('Tree point', tp.sx + 8, tp.sy - 8);
-    }
-    if (swayVisual > 0.01 && lp) {
-        ctx.fillStyle = 'rgba(255,159,28,0.95)';
-        ctx.fillText('Local wind sway envelope (at t)', lp.sx + 8, lp.sy + 12);
-    }
-
-    ctx.fillStyle = 'rgba(143,170,200,0.85)';
-    ctx.font = '8px JetBrains Mono,monospace';
-    ctx.fillText(`Base ${baseRadial.toFixed(1)}ft`, 16, H - 20);
-    ctx.fillStyle = 'rgba(255,71,87,0.92)';
-    ctx.fillText(`Worst ${worstRadial.toFixed(1)}ft`, 16, H - 8);
-    ctx.fillStyle = 'rgba(143,170,200,0.85)';
-    ctx.fillText(`Span pos t=${t.toFixed(1)}`, 118, H - 8);
 }
 
 function runMdrForecast() {
@@ -527,6 +527,31 @@ function runMdrForecast() {
     if (typeof resetMdrView === 'function') resetMdrView();
     if (typeof setVizSource === 'function') setVizSource('mdr');
     drawMdrCanvas(lastMdrPlot);
+
+    // Log the MDR forecast
+    if (typeof logEntries !== 'undefined' && typeof updateLog === 'function') {
+        const urgency = yearsToBreach <= 1 ? 'strike' : (yearsToBreach <= 3 ? 'warn' : 'clear');
+        logEntries.unshift({
+            type: 'mdr',
+            hd,
+            vd: vdMag,
+            th: 0,
+            t,
+            lean: 0,
+            species: '',
+            wires: 1,
+            wireData: [],
+            worstMargin: remainingToThreshold,
+            worstVsReq: remainingToThreshold,
+            overallClear: urgency === 'clear',
+            overallWarn: urgency === 'warn',
+            mdrYears: yearsToBreach,
+            mdrGrowth: growth,
+            mdrBasis: usedLabel,
+            ts: new Date()
+        });
+        updateLog();
+    }
 }
 
 function resetMdrForecast() {
