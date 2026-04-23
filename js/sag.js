@@ -1,4 +1,4 @@
-﻿        // ── SAG ──
+        // ── SAG ──
         ['sag-pole', 'sag-wire-low'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', () => {
                 const pole = parseFloat(document.getElementById('sag-pole').value);
@@ -96,14 +96,23 @@
 
         function pushSagToCalc() {
             if (!lastSag) return;
+            // Get pole attachment height from the sag tab input
+            const poleHt = parseFloat(document.getElementById('sag-pole').value) || null;
             if (lastSag.perWire && lastSag.perWire.length) {
                 lastSag.perWire.forEach(ps => {
                     if (!wires[ps.index]) return;
                     const n = String(wires[ps.index].name || '');
                     wires[ps.index].sag = /neutral/i.test(n) ? 0 : parseFloat(ps.sagMax.toFixed(2));
+                    // Push pole attachment height so wire ht reflects the actual pole reading
+                    if (poleHt && Number.isFinite(poleHt)) {
+                        wires[ps.index].ht = poleHt;
+                    }
                 });
             } else {
-                wires.forEach(w => { w.sag = parseFloat((lastSag.worstSagMax || 0).toFixed(2)); });
+                wires.forEach(w => {
+                    w.sag = parseFloat((lastSag.worstSagMax || 0).toFixed(2));
+                    if (poleHt && Number.isFinite(poleHt)) w.ht = poleHt;
+                });
             }
             renderWireList();
             document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === 0));
