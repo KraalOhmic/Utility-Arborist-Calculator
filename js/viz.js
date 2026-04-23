@@ -1,7 +1,8 @@
-﻿        // ── VIZ ──
+        // ── VIZ ──
         function drawViz(r) {
             const canvas = document.getElementById('vizCanvas');
-            const cssW = canvas.parentElement.clientWidth, cssH = Math.round(cssW * 0.75);
+            const cssW = Math.max(canvas.parentElement.clientWidth || 0, canvas.parentElement.offsetWidth || 0, window.innerWidth || 300);
+            const cssH = Math.round(cssW * 0.75);
             const dpr = window.devicePixelRatio || 1;
             canvas.width = cssW * dpr; canvas.height = cssH * dpr; canvas.style.height = cssH + 'px';
             const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
