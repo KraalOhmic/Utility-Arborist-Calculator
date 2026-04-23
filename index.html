@@ -66,7 +66,38 @@ window.addEventListener('unhandledrejection', function(e) {
         <div class="slabel">Tree &amp; terrain</div>
         <div class="grid2">
             <div class="field"><label>Horiz. Distance to Conductor <span>HD ft</span></label><input type="number" id="hd" value="100" inputmode="decimal" oninput="checkNeg(this)"></div>
-            <div class="field"><label>Tree Base Elevation Relative To Conductor ± <span>VD ft</span></label><input type="number" id="vd" value="0" inputmode="decimal" oninput="checkNeg(this)"></div>
+            <div class="field" id="vd-field-wrap">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <label style="margin-bottom:0">Tree Base Elevation <span>VD ft</span></label>
+                    <div style="display:flex;gap:0;border:1px solid rgba(59,139,255,.25);border-radius:6px;overflow:hidden;flex-shrink:0">
+                        <button id="vd-tab-direct" onclick="switchVdMode('direct')" style="padding:3px 10px;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.08em;background:var(--accent2);color:#000;border:none;cursor:pointer">± FT</button>
+                        <button id="vd-tab-slope" onclick="switchVdMode('slope')" style="padding:3px 10px;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:.08em;background:transparent;color:var(--text2);border:none;cursor:pointer">SLOPE</button>
+                    </div>
+                </div>
+                <div id="vd-direct-inputs">
+                    <input type="number" id="vd" value="0" inputmode="decimal" oninput="checkNeg(this)" style="width:100%">
+                </div>
+                <div id="vd-slope-inputs" style="display:none">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                        <div>
+                            <label style="font-size:9px;letter-spacing:.1em;color:var(--text2);text-transform:uppercase">HD to Conductor ft</label>
+                            <input type="number" id="vd-slope-hd" inputmode="decimal" placeholder="0" oninput="calcSlopeVd()" style="width:100%">
+                        </div>
+                        <div>
+                            <label style="font-size:9px;letter-spacing:.1em;color:var(--text2);text-transform:uppercase">Angle ° (+ up / − down)</label>
+                            <input type="number" id="vd-slope-angle" inputmode="decimal" placeholder="0" oninput="calcSlopeVd()" style="width:100%">
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(59,139,255,.07);border-radius:6px;border:1px solid rgba(59,139,255,.15)">
+                        <div style="flex:1">
+                            <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--text2);text-transform:uppercase">Computed VD</div>
+                            <div id="vd-slope-result" style="font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--accent2)">—</div>
+                        </div>
+                        <button onclick="applySlopeVd()" style="padding:6px 12px;background:var(--accent2);color:#000;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:.08em;cursor:pointer;font-weight:600">APPLY →</button>
+                    </div>
+                    <input type="hidden" id="vd-hidden" value="0">
+                </div>
+            </div>
         </div>        <div class="grid2">
             <div class="field"><label>Tree Height <span>ft</span></label><input type="number" id="th" value="75" inputmode="decimal" oninput="checkNeg(this)"></div>
             <div class="field"><label>Position in Span <span>t 0.1-0.9</span></label><input type="number" id="span-pos" min="0.1" max="0.9" step="0.1" value="0.5" inputmode="decimal" oninput="updateSpanPos(this.value)"></div>
@@ -241,7 +272,6 @@ window.addEventListener('unhandledrejection', function(e) {
             <canvas id="vizCanvas"></canvas>
             <canvas id="isoCanvas" style="display:none;width:100%;background:var(--bg)"></canvas>
             <canvas id="mdrCanvas" style="display:none;width:100%;background:var(--bg)"></canvas>
-                <div id="mdr-canvas-legend" style="display:none;flex-wrap:wrap;gap:10px 16px;padding:8px 4px 0;margin-top:4px"></div>
 
             <div class="viz-legend" id="viz-legend" style="display:none"></div>
             <div class="viz-stats" id="viz-stats" style="display:none">
@@ -292,7 +322,7 @@ window.addEventListener('unhandledrejection', function(e) {
         </div>
 
         <div class="btn-row">
-            <button class="btn-run" onclick="runMdrForecast()">Estimate Clearance</button>
+            <button class="btn-run" onclick="runMdrForecast()">Run Forecast</button>
             <button class="btn-reset" onclick="resetMdrForecast()">Reset</button>
         </div>
         <div id="mdr-validation" class="validation-box" style="display:none"></div>
@@ -352,6 +382,7 @@ window.addEventListener('unhandledrejection', function(e) {
     </script>
 </body>
 </html>
+
 
 
 
