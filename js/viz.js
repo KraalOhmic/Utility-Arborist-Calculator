@@ -430,12 +430,17 @@
             const treeZ = t * span;
             const treeX = hd;
             const maxWH = Math.max(...r.wires.map(w => w.ht));
-            const minY = Math.min(0, vd, ...r.wires.map(w => w.ht));
-            const maxY = Math.max(maxWH, vd + th, 20);
+            const pBaseScene = r.partialBase || 0;
+            const pLenScene = r.partialLength || 0;
+            const pOnScene = r.partialActive && pBaseScene > 0 && pLenScene > 0;
+            const effectiveTopY = pOnScene ? vd + pBaseScene + pLenScene : vd + th;
+            const pivotScene = pOnScene ? vd + pBaseScene : vd;
+            const minY = Math.min(0, vd, pivotScene, ...r.wires.map(w => w.ht));
+            const maxY = Math.max(maxWH, effectiveTopY, 20);
             const sceneH = Math.max(maxY - minY, 20);
 
             const cx3 = hd * 0.28 + isoPanX;
-            const cy3 = minY + sceneH * 0.46 + isoPanY;
+            const cy3 = (minY + maxY) * 0.5 + isoPanY;
             const cz3 = span * 0.5 + isoPanZ;
             const sceneSize = Math.max(span * 0.9, hd * 1.35, sceneH * 1.1, 80);
             const camDist = sceneSize * 0.95 / isoZoom;
@@ -582,7 +587,15 @@
             const failPt3 = proj(failPtX, failPtY, treeZ);
 
             if (pivotPt) {
-                // 1. Safe Portion (Green)
+                // 0. Green — ground to failure base (live trunk, not at risk)
+                if (pOnIso && basePt) {
+                    ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = treeStroke; ctx.lineCap = 'round'; ctx.setLineDash([]);
+                    ctx.shadowColor = '#2ecc71'; ctx.shadowBlur = 8;
+                    ctx.beginPath(); ctx.moveTo(basePt.sx, basePt.sy); ctx.lineTo(pivotPt.sx, pivotPt.sy); ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+
+                // 1. Green — pivot to safe transition (safe portion of failing section)
                 if (pTransition) {
                     ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = treeStroke; ctx.lineCap = 'round'; ctx.setLineDash([]);
                     ctx.shadowColor = '#2ecc71'; ctx.shadowBlur = 10;
@@ -628,10 +641,18 @@
 
                 // Base dot
                 if (basePt) { ctx.fillStyle = '#607a99'; ctx.beginPath(); ctx.arc(basePt.sx, basePt.sy, 4, 0, Math.PI * 2); ctx.fill(); }
-                // Pivot dot (failure point for partial, same as base for full)
+                // Failure base dot — orange, prominent, with label
                 if (pOnIso && pivotPt) {
+                    ctx.shadowColor = '#ff9f1c'; ctx.shadowBlur = 12;
                     ctx.fillStyle = '#ff9f1c';
-                    ctx.beginPath(); ctx.arc(pivotPt.sx, pivotPt.sy, 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(pivotPt.sx, pivotPt.sy, 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.shadowBlur = 0;
+                    // White center
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                    ctx.beginPath(); ctx.arc(pivotPt.sx, pivotPt.sy, 2.5, 0, Math.PI * 2); ctx.fill();
+                    // Label
+                    ctx.fillStyle = 'rgba(255,159,28,0.9)'; ctx.font = 'bold 9px JetBrains Mono,monospace'; ctx.textAlign = 'left';
+                    ctx.fillText(pBaseIso + 'ft • failure base', pivotPt.sx + 8, pivotPt.sy + 3);
                 }
             }
 
