@@ -14,6 +14,76 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+    <!-- ══ SPLASH SCREEN ══ -->
+    <div id="splash-screen" style="
+        position:fixed;inset:0;z-index:99999;
+        background:#080c10;
+        display:flex;flex-direction:column;
+        align-items:center;justify-content:center;
+        padding:40px 32px;
+        font-family:'Barlow Condensed',sans-serif;
+    ">
+        <!-- Icon -->
+        <img src="./icons/icon-512.png" alt="Strike Calc" style="
+            width:110px;height:110px;
+            border-radius:26px;
+            margin-bottom:28px;
+            box-shadow:0 8px 40px rgba(0,0,0,0.5);
+        ">
+
+        <!-- App name -->
+        <div style="
+            font-family:'Bebas Neue',sans-serif;
+            font-size:38px;letter-spacing:.1em;
+            color:#ffffff;
+            margin-bottom:6px;
+        ">STRIKE CALC</div>
+
+        <div style="
+            font-family:'JetBrains Mono',monospace;
+            font-size:9px;letter-spacing:.2em;
+            color:rgba(59,139,255,0.7);
+            text-transform:uppercase;
+            margin-bottom:40px;
+        ">Wire Clearance Calculator</div>
+
+        <!-- Disclaimer box -->
+        <div style="
+            background:rgba(232,255,71,0.06);
+            border:1px solid rgba(232,255,71,0.2);
+            border-radius:10px;
+            padding:18px 20px;
+            max-width:320px;
+            text-align:center;
+            margin-bottom:40px;
+        ">
+            <div style="
+                font-family:'JetBrains Mono',monospace;
+                font-size:9px;letter-spacing:.16em;
+                color:rgba(232,255,71,0.6);
+                text-transform:uppercase;
+                margin-bottom:10px;
+            ">⚠ Screening Tool Only</div>
+            <div style="
+                font-size:15px;line-height:1.55;
+                color:rgba(200,216,232,0.85);
+            ">All calculations are estimates to assist in professional judgment. Not for final compliance determinations or engineering decisions.</div>
+        </div>
+
+        <!-- Continue button -->
+        <button onclick="document.getElementById('splash-screen').style.display='none'" style="
+            background:#e8ff47;
+            color:#080c10;
+            border:none;
+            border-radius:8px;
+            padding:14px 48px;
+            font-family:'Bebas Neue',sans-serif;
+            font-size:20px;letter-spacing:.12em;
+            cursor:pointer;
+            box-shadow:0 4px 20px rgba(232,255,71,0.25);
+        ">CONTINUE</button>
+    </div>
+
 <div id="debug-errors" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#ff0040;color:white;font-family:monospace;font-size:11px;padding:8px;z-index:99999;max-height:40vh;overflow-y:auto;white-space:pre-wrap;"></div>
 <script>
 window.onerror = function(msg, src, line, col, err) {
@@ -420,60 +490,3 @@ window.addEventListener('unhandledrejection', function(e) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
