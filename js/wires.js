@@ -266,6 +266,12 @@
             const ra = document.getElementById('result-actions');
             if (ra) ra.style.display = 'none';
             clearValidation('calc-validation');
+            // Reset partial failure
+            if (partialFailureActive) togglePartialFailure();
+            ['partial-base', 'partial-length'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
             // Focus HD for fast entry
             setTimeout(() => document.getElementById('hd')?.focus(), 50);
         }
@@ -309,4 +315,42 @@
                 posEl.value = t.toFixed(1);
                 updateEffHt();
             }
+        }
+
+        // ── PARTIAL FAILURE ──
+        let partialFailureActive = false;
+
+        function togglePartialFailure() {
+            partialFailureActive = !partialFailureActive;
+            const wrap = document.getElementById('partial-failure-wrap');
+            const btn = document.getElementById('partial-toggle-btn');
+            if (!wrap || !btn) return;
+            wrap.style.display = partialFailureActive ? 'block' : 'none';
+            btn.style.background = partialFailureActive ? 'rgba(255,159,28,.15)' : 'transparent';
+            btn.style.borderColor = partialFailureActive ? 'rgba(255,159,28,.6)' : 'rgba(255,159,28,.3)';
+            btn.style.color = partialFailureActive ? 'rgba(255,159,28,1)' : 'rgba(255,159,28,.7)';
+            if (!partialFailureActive) {
+                document.getElementById('partial-preview').textContent = 'Enter values above to preview';
+            } else {
+                document.getElementById('partial-base')?.focus();
+            }
+        }
+
+        function updatePartialPreview() {
+            const base = parseFloat(document.getElementById('partial-base')?.value);
+            const length = parseFloat(document.getElementById('partial-length')?.value);
+            const th = parseFloat(document.getElementById('th')?.value);
+            const preview = document.getElementById('partial-preview');
+            if (!preview) return;
+            if (!Number.isFinite(base) || !Number.isFinite(length)) {
+                preview.textContent = 'Enter values above to preview';
+                return;
+            }
+            if (Number.isFinite(th) && base + length > th) {
+                preview.textContent = 'Warning: failure base + length exceeds total tree height';
+                preview.style.color = 'rgba(255,71,87,.9)';
+                return;
+            }
+            preview.style.color = 'rgba(255,159,28,.8)';
+            preview.textContent = `${length}ft section fails from ${base}ft — tip reaches ${(base + length).toFixed(0)}ft · arc radius ${length}ft`;
         }
