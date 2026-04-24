@@ -92,7 +92,12 @@
                     : 0;
                 const effectiveHDWire = Math.max(0, effectiveHD - windSwayFt);
 
-                let requiredReach, reach, strikeMode, strike;
+                let requiredReach, reach, strikeMode;
+                // Always compute full strike first as fallback
+                let strike = computeRequiredStrikeDistance(effectiveHDWire, vd, effectiveHt);
+                requiredReach = strike.distance;
+                reach = th;
+                strikeMode = 'full';
                 if (partialActive && partialBase > 0 && partialLength > 0) {
                     // Partial failure: arc swings from failure base point
                     // Failure point is partialBase ft above ground at tree base
@@ -104,11 +109,6 @@
                     reach = partialLength;
                     strikeMode = 'partial';
                     strike = { horizontal: effectiveHDWire, verticalDiff: effectiveHt - failurePointElev, distance: requiredReach };
-                } else {
-                    strike = computeRequiredStrikeDistance(effectiveHDWire, vd, effectiveHt);
-                    requiredReach = strike.distance;
-                    reach = th;
-                    strikeMode = 'full';
                 }
 
                 const margin = requiredReach - reach;
