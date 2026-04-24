@@ -73,6 +73,11 @@
             });
 
             if (th <= 0) { validationMessages.push('Tree height must be greater than 0 ft.'); invalidFields.push('th'); }
+            if (partialActive && partialBase > 0 && partialLength > 0 && partialBase + partialLength > th) {
+                validationMessages.push('Partial failure base + length cannot exceed total tree height (' + th + 'ft).');
+                invalidFields.push('partial-base');
+                invalidFields.push('partial-length');
+            }
             if (!wireData.length) { validationMessages.push('Add at least one wire.'); }
 
             if (validationMessages.length) {
