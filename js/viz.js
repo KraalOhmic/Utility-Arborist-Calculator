@@ -556,7 +556,7 @@
             // Calculate coordinates for the LEANING transition point
             const safeTrunkLen = Math.min(reachLen, minStrikeDist);
             const transitionX = treeX - safeTrunkLen * sinL;
-            const transitionY = vd + safeTrunkLen * cosL;
+            const transitionY = pivotY + safeTrunkLen * cosL;
             const pTransition = proj(transitionX, transitionY, treeZ);
 
             // Full tip point
@@ -573,7 +573,7 @@
             const failPtY = vd + failureBaseLen * cosL;
             const failPt3 = proj(failPtX, failPtY, treeZ);
 
-            if (basePt) {
+            if (pivotPt) {
                 // 1. Safe Portion (Green)
                 if (pTransition) {
                     ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = treeStroke; ctx.lineCap = 'round'; ctx.setLineDash([]);
@@ -619,15 +619,20 @@
                 }
 
                 // Base dot
-                ctx.fillStyle = '#607a99'; ctx.beginPath(); ctx.arc(basePt.sx, basePt.sy, 4, 0, Math.PI * 2); ctx.fill();
+                if (basePt) { ctx.fillStyle = '#607a99'; ctx.beginPath(); ctx.arc(basePt.sx, basePt.sy, 4, 0, Math.PI * 2); ctx.fill(); }
+                // Pivot dot (failure point for partial, same as base for full)
+                if (pOnIso && pivotPt) {
+                    ctx.fillStyle = '#ff9f1c';
+                    ctx.beginPath(); ctx.arc(pivotPt.sx, pivotPt.sy, 5, 0, Math.PI * 2); ctx.fill();
+                }
             }
 
             // Wire Indicators (Base to wire dots)
             r.wires.forEach(w => {
                 const wirePt = proj(0, w.effectiveHt, treeZ);
-                if (wirePt && basePt) {
+                if (wirePt && pivotPt) {
                     ctx.strokeStyle = w.color; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(basePt.sx, basePt.sy); ctx.lineTo(wirePt.sx, wirePt.sy); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(pivotPt.sx, pivotPt.sy); ctx.lineTo(wirePt.sx, wirePt.sy); ctx.stroke();
                     ctx.fillStyle = w.color; ctx.beginPath(); ctx.arc(wirePt.sx, wirePt.sy, 3, 0, Math.PI * 2); ctx.fill();
                 }
             });
