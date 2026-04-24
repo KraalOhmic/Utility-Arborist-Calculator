@@ -40,12 +40,20 @@
                 const eHt = w.effectiveHt;
                 const leanR2d = (r.lean || 0) * Math.PI / 180;
                 const leanPen = r.leanPenalty || 0;
-                // Arc centered at tree base (hd,vd), radius=th — this is the fall sweep
-                const reachR = cd(th);
-                const angToWire = Math.atan2(cy(eHt) - cy(vd), cx(0) - cx(hd)), angUp = -Math.PI / 2;
+                // Arc centered at pivot point — partial failure aware
+                const pBase2d = r.partialBase || 0;
+                const pLen2d = r.partialLength || 0;
+                const pOn2d = r.partialActive && pBase2d > 0 && pLen2d > 0;
+
+                const arcCenterY = pOn2d ? vd + pBase2d : vd;
+                const arcRadius = pOn2d ? pLen2d : th;
+
+                const reachR = cd(arcRadius);
+                const angToWire = Math.atan2(cy(eHt) - cy(arcCenterY), cx(0) - cx(hd));
+                const angUp = -Math.PI / 2;
                 ctx.shadowColor = w.color + '33'; ctx.shadowBlur = 10;
                 ctx.strokeStyle = w.color + '45'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
-                ctx.beginPath(); ctx.arc(cx(hd), cy(vd), reachR, angUp, angToWire, true); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx(hd), cy(arcCenterY), reachR, angUp, angToWire, true); ctx.stroke();
                 ctx.shadowBlur = 0; ctx.setLineDash([]);
                 // Wind sway envelope from worst-sag point up toward pole-top plane (wire attachment height).
                 if ((w.windSwayFt || 0) > 0.05) {
@@ -83,7 +91,7 @@
                 ctx.strokeStyle = gCol; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
                 // Gap line from effective base position (hd-leanPenalty, vd) to wire
                 const startX = Number.isFinite(w.effectiveHDWire) ? w.effectiveHDWire : (r.effectiveHD || hd);
-                ctx.beginPath(); ctx.moveTo(cx(startX), cy(vd)); ctx.lineTo(cx(0), cy(eHt)); ctx.stroke(); ctx.setLineDash([]);
+                ctx.beginPath(); ctx.moveTo(cx(startX), cy(arcCenterY)); ctx.lineTo(cx(0), cy(eHt)); ctx.stroke(); ctx.setLineDash([]);
                 ctx.shadowColor = w.color; ctx.shadowBlur = 10;
                 ctx.fillStyle = w.color; ctx.beginPath(); ctx.arc(cx(0), cy(eHt), 4, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
                 ctx.fillStyle = w.color + 'cc'; ctx.font = '8px JetBrains Mono,monospace'; ctx.textAlign = 'right';
@@ -121,7 +129,7 @@
                 ctx.fillText(pBase + 'ft', cx(hd) + 8, cy(vd + pBase) + 3);
                 // Arc from failure point
                 ctx.strokeStyle = 'rgba(255,159,28,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
-                ctx.beginPath(); ctx.arc(cx(hd), cy(vd + pBase), Math.abs(cy(vd + pBase) - cy(vd + pBase + pLen)), 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(cx(hd), cy(arcCenterY), reachR, 0, Math.PI * 2);
                 ctx.stroke(); ctx.setLineDash([]);
             }
 
