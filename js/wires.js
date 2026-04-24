@@ -1,3 +1,19 @@
+// ── SYNC WIRE INPUTS → ARRAY ──
+        function syncWiresFromDOM() {
+            wires.forEach((w, i) => {
+                const nameEl = document.getElementById('w-name-' + i);
+                const htEl   = document.getElementById('w-ht-'   + i);
+                const sagEl  = document.getElementById('w-sag-'  + i);
+                const clrEl  = document.getElementById('w-clr-'  + i);
+                const typeEl = document.getElementById('w-type-'  + i);
+                if (nameEl) w.name   = nameEl.value;
+                if (htEl)   w.ht     = parseFloat(htEl.value)   || w.ht;
+                if (sagEl)  w.sag    = parseFloat(sagEl.value)   || 0;
+                if (clrEl)  w.minClr = parseFloat(clrEl.value)   ?? w.minClr;
+                if (typeEl) { w.type = typeEl.value; onWireTypeChange(i); }
+            });
+        }
+
         // ── WIRE LIST ──
         function renderWireList() {
             document.getElementById('wire-list').innerHTML = wires.map((w, i) => `
@@ -168,6 +184,7 @@
                     w.sag = ft;
                 }
             });
+            syncWiresFromDOM();
             renderWireList();
             updateEffHt();
             // Highlight active preset button
@@ -205,6 +222,7 @@
             wires.forEach(w => {
                 if (!/neutral/i.test(String(w.name || ''))) w.sag = val;
             });
+            syncWiresFromDOM();
             renderWireList();
             updateEffHt();
             // Highlight custom button, clear presets
