@@ -496,43 +496,47 @@
                 if (started) ctx.stroke();
                 ctx.setLineDash([]);
             });
-            // CALCULATE STRIKE HIGHLIGHT (The scribe point)
+            // CALCULATE STRIKE HIGHLIGHT — partial failure aware
+            const pivotY = pOnIso ? vd + pBaseIso : vd;
+            const reachLen = pOnIso ? pLenIso : th;
+
             let minStrikeDist = Infinity;
             r.wires.forEach(w => {
                 const strikeHd = Number.isFinite(w.effectiveHDWire) ? w.effectiveHDWire : hd;
-                const dist = computeRequiredStrikeDistance(strikeHd, vd, w.effectiveHt).distance;
+                const dist = Math.hypot(strikeHd, w.effectiveHt - pivotY);
                 if (dist < minStrikeDist) minStrikeDist = dist;
             });
 
+            const pivotPt = proj(treeX, pivotY, treeZ);
             const basePt = proj(treeX, vd, treeZ);
-            if (basePt) {
+            if (pivotPt) {
                 const N = 60;
-                const safeRadius = Math.min(th, minStrikeDist);
+                const safeRadius = Math.min(reachLen, minStrikeDist);
 
                 // Draw Safe Wedge (Inner Curve) - Green
                 ctx.fillStyle = 'rgba(46, 204, 113, 0.25)';
                 ctx.beginPath();
-                ctx.moveTo(basePt.sx, basePt.sy);
+                ctx.moveTo(pivotPt.sx, pivotPt.sy);
                 for (let i = 0; i <= N; i++) {
                     const ang = (Math.PI / 2) * (i / N);
-                    const p = proj(treeX - safeRadius * Math.sin(ang), Math.max(0, vd + safeRadius * Math.cos(ang)), treeZ);
+                    const p = proj(treeX - safeRadius * Math.sin(ang), Math.max(0, pivotY + safeRadius * Math.cos(ang)), treeZ);
                     if (p) ctx.lineTo(p.sx, p.sy);
                 }
                 ctx.closePath();
                 ctx.fill();
 
                 // Draw Strike Wedge (Outer Scribed Ring) - Red
-                if (th > minStrikeDist) {
+                if (reachLen > minStrikeDist) {
                     ctx.fillStyle = 'rgba(255, 71, 87, 0.4)';
                     ctx.beginPath();
                     for (let i = 0; i <= N; i++) { // Outer edge
                         const ang = (Math.PI / 2) * (i / N);
-                        const p = proj(treeX - th * Math.sin(ang), Math.max(0, vd + th * Math.cos(ang)), treeZ);
+                        const p = proj(treeX - reachLen * Math.sin(ang), Math.max(0, pivotY + reachLen * Math.cos(ang)), treeZ);
                         if (p) ctx.lineTo(p.sx, p.sy);
                     }
                     for (let i = N; i >= 0; i--) { // Inner edge (scribed along the strike radius)
                         const ang = (Math.PI / 2) * (i / N);
-                        const p = proj(treeX - minStrikeDist * Math.sin(ang), Math.max(0, vd + minStrikeDist * Math.cos(ang)), treeZ);
+                        const p = proj(treeX - minStrikeDist * Math.sin(ang), Math.max(0, pivotY + minStrikeDist * Math.cos(ang)), treeZ);
                         if (p) ctx.lineTo(p.sx, p.sy);
                     }
                     ctx.closePath();
@@ -550,7 +554,7 @@
             const treeStroke = 5;
 
             // Calculate coordinates for the LEANING transition point
-            const safeTrunkLen = Math.min(th, minStrikeDist);
+            const safeTrunkLen = Math.min(reachLen, minStrikeDist);
             const transitionX = treeX - safeTrunkLen * sinL;
             const transitionY = vd + safeTrunkLen * cosL;
             const pTransition = proj(transitionX, transitionY, treeZ);
@@ -574,12 +578,12 @@
                 if (pTransition) {
                     ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = treeStroke; ctx.lineCap = 'round'; ctx.setLineDash([]);
                     ctx.shadowColor = '#2ecc71'; ctx.shadowBlur = 10;
-                    ctx.beginPath(); ctx.moveTo(basePt.sx, basePt.sy); ctx.lineTo(pTransition.sx, pTransition.sy); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(pivotPt.sx, pivotPt.sy); ctx.lineTo(pTransition.sx, pTransition.sy); ctx.stroke();
                     ctx.shadowBlur = 0;
                 }
 
                 // 2. Strike Portion (Red + Measurement)
-                if (th > minStrikeDist && pTransition && tt3) {
+                if (reachLen > minStrikeDist && pTransition && tt3) {
                     // Draw Red Segment
                     ctx.strokeStyle = '#ff4757'; ctx.lineWidth = treeStroke; ctx.lineCap = 'round'; ctx.setLineDash([]);
                     ctx.shadowColor = '#ff4757'; ctx.shadowBlur = 15;
@@ -587,13 +591,13 @@
                     ctx.shadowBlur = 0;
 
                     // Draw Dimension Line for Strike Length
-                    const strikeLength = th - minStrikeDist;
+                    const strikeLength = reachLen - minStrikeDist;
                     const offset = 10; // Offset dimension line from trunk
                     const perpX = cosL * offset, perpY = sinL * offset; // Perpendicular offset vector
 
                     const pDimStart = proj(transitionX + perpX, transitionY - perpY, treeZ);
                     const pDimEnd = proj(tipX + perpX, tipY - perpY, treeZ);
-                    const pDimMid = proj(transitionX + perpX - (th - minStrikeDist) / 2 * sinL, transitionY - perpY + (th - minStrikeDist) / 2 * cosL, treeZ);
+                    const pDimMid = proj(transitionX + perpX - (reachLen - minStrikeDist) / 2 * sinL, transitionY - perpY + (reachLen - minStrikeDist) / 2 * cosL, treeZ);
 
                     if (pDimStart && pDimEnd) {
                         ctx.strokeStyle = '#ff4757cc'; ctx.lineWidth = 1; ctx.setLineDash([]);
@@ -608,7 +612,7 @@
                             ctx.fillText(`Strike: ${strikeLength.toFixed(1)}ft`, pDimMid.sx + 5, pDimMid.sy);
                         }
                     }
-                } else if (th <= minStrikeDist && tt3 && pTransition) {
+                } else if (reachLen <= minStrikeDist && tt3 && pTransition) {
                     // If whole tree is safe, ensure it draws all the way to tip as green
                     ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = treeStroke; ctx.lineCap = 'round';
                     ctx.beginPath(); ctx.moveTo(pTransition.sx, pTransition.sy); ctx.lineTo(tt3.sx, tt3.sy); ctx.stroke();
