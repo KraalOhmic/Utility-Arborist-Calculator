@@ -129,7 +129,7 @@
                 ctx.fillText(pBase + 'ft', cx(hd) + 8, cy(vd + pBase) + 3);
                 // Arc from failure point
                 ctx.strokeStyle = 'rgba(255,159,28,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
-                ctx.beginPath(); ctx.arc(cx(hd), cy(arcCenterY), reachR, 0, Math.PI * 2);
+                ctx.beginPath(); ctx.arc(cx(hd), cy(vd + pBase), Math.abs(cy(vd + pBase) - cy(vd + pBase + pLen)), 0, Math.PI * 2);
                 ctx.stroke(); ctx.setLineDash([]);
             }
 
