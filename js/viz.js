@@ -93,14 +93,52 @@
             ctx.strokeStyle = '#3b8bff'; ctx.lineWidth = 4; ctx.lineCap = 'round';
             ctx.beginPath(); ctx.moveTo(cx(0), cy(0)); ctx.lineTo(cx(0), cy(maxWH)); ctx.stroke(); ctx.shadowBlur = 0;
             ctx.fillStyle = '#3b8bff'; ctx.fillRect(cx(0) - 5, cy(0) - 3, 10, 6);
+            const pBase = r.partialBase || 0;
+            const pLen = r.partialLength || 0;
+            const pOn = r.partialActive && pBase > 0 && pLen > 0;
+
+            // Live trunk section
             ctx.strokeStyle = '#607a99'; ctx.lineWidth = 4; ctx.lineCap = 'round';
-            ctx.beginPath(); ctx.moveTo(cx(hd), cy(vd)); ctx.lineTo(cx(hd), cy(vd + th)); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx(hd), cy(vd));
+            ctx.lineTo(cx(hd), pOn ? cy(vd + pBase) : cy(vd + th));
+            ctx.stroke();
+
+            if (pOn) {
+                // Dead/failing section — orange dashed
+                ctx.strokeStyle = '#ff9f1c'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+                ctx.setLineDash([6, 4]);
+                ctx.beginPath();
+                ctx.moveTo(cx(hd), cy(vd + pBase));
+                ctx.lineTo(cx(hd), cy(vd + pBase + pLen));
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // Failure point marker
+                ctx.fillStyle = '#ff9f1c';
+                ctx.beginPath(); ctx.arc(cx(hd), cy(vd + pBase), 4, 0, Math.PI * 2); ctx.fill();
+                // Label failure base
+                ctx.fillStyle = 'rgba(255,159,28,0.8)'; ctx.font = '8px JetBrains Mono,monospace'; ctx.textAlign = 'left';
+                ctx.fillText(pBase + 'ft', cx(hd) + 8, cy(vd + pBase) + 3);
+                // Arc from failure point
+                ctx.strokeStyle = 'rgba(255,159,28,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4, 5]);
+                ctx.beginPath(); ctx.arc(cx(hd), cy(vd + pBase), Math.abs(cy(vd + pBase) - cy(vd + pBase + pLen)), 0, Math.PI * 2);
+                ctx.stroke(); ctx.setLineDash([]);
+            }
+
             ctx.fillStyle = '#607a99'; ctx.beginPath(); ctx.arc(cx(hd), cy(vd), 4, 0, Math.PI * 2); ctx.fill();
             const worstClear = r.wires.every(w => w.clear), topC = worstClear ? '#2ecc71' : '#ff4757';
+            const tipY = pOn ? vd + pBase + pLen : vd + th;
             ctx.shadowColor = topC; ctx.shadowBlur = 18;
-            ctx.fillStyle = topC; ctx.beginPath(); ctx.arc(cx(hd), cy(vd + th), 7, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
-            ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(cx(hd), cy(vd + th), 3, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = 'rgba(96,122,153,0.85)'; ctx.font = '8px JetBrains Mono,monospace'; ctx.textAlign = 'left'; ctx.fillText(th + 'ft', cx(hd) + 11, cy(vd + th / 2) + 3);
+            ctx.fillStyle = pOn ? '#ff9f1c' : topC;
+            ctx.beginPath(); ctx.arc(cx(hd), cy(tipY), 7, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+            ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(cx(hd), cy(tipY), 3, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = pOn ? 'rgba(255,159,28,0.85)' : 'rgba(96,122,153,0.85)';
+            ctx.font = '8px JetBrains Mono,monospace'; ctx.textAlign = 'left';
+            ctx.fillText((pOn ? pBase + pLen : th) + 'ft', cx(hd) + 11, cy(tipY) + 3);
+            if (pOn) {
+                ctx.fillStyle = 'rgba(255,159,28,0.6)'; ctx.font = '7px JetBrains Mono,monospace';
+                ctx.fillText('PARTIAL', cx(hd) + 11, cy(tipY) + 12);
+            }
             if (Math.abs(vd) > 0.5) {
                 const ex = cx(hd) + 24, y0 = cy(0), y1 = cy(vd);
                 ctx.shadowColor = '#e8ff47'; ctx.shadowBlur = 6; ctx.strokeStyle = '#e8ff47'; ctx.lineWidth = 1.5;
