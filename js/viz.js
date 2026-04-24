@@ -541,6 +541,10 @@
             }
 
             // --- HIGHLIGHTED TRUNK + STRIKE MEASUREMENT ---
+            const pBaseIso = r.partialBase || 0;
+            const pLenIso = r.partialLength || 0;
+            const pOnIso = r.partialActive && pBaseIso > 0 && pLenIso > 0;
+
             const leanRad = (r.lean || 0) * Math.PI / 180;
             const sinL = Math.sin(leanRad), cosL = Math.cos(leanRad);
             const treeStroke = 5;
@@ -552,9 +556,18 @@
             const pTransition = proj(transitionX, transitionY, treeZ);
 
             // Full tip point
-            const tipX = treeX - th * sinL;
-            const tipY = vd + th * cosL;
+            // Partial failure tip adjustment
+            const effectiveTipLen = pOnIso ? pBaseIso + pLenIso : th;
+            const failureBaseLen = pOnIso ? pBaseIso : th;
+
+            const tipX = treeX - effectiveTipLen * sinL;
+            const tipY = vd + effectiveTipLen * cosL;
             const tt3 = proj(tipX, tipY, treeZ);
+
+            // Failure point in 3D
+            const failPtX = treeX - failureBaseLen * sinL;
+            const failPtY = vd + failureBaseLen * cosL;
+            const failPt3 = proj(failPtX, failPtY, treeZ);
 
             if (basePt) {
                 // 1. Safe Portion (Green)
