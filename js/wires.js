@@ -333,6 +333,7 @@
                 document.getElementById('partial-preview').textContent = 'Enter values above to preview';
             } else {
                 document.getElementById('partial-base')?.focus();
+                updatePartialPreview();
             }
         }
 
