@@ -92,22 +92,20 @@
                     : 0;
                 const effectiveHDWire = Math.max(0, effectiveHD - windSwayFt);
 
-                let requiredReach, reach, strikeMode;
+                let requiredReach, reach, strikeMode, strike;
                 if (partialActive && partialBase > 0 && partialLength > 0) {
                     // Partial failure: arc swings from failure base point
-                    // Failure point is partialBase ft above ground at the tree base
-                    // VD shifts the tree base elevation relative to the conductor ground
-                    const failurePointElev = partialBase + vd; // elevation of failure point relative to conductor ground
-                    const strike = computeRequiredStrikeDistance(effectiveHDWire, vd - partialBase, effectiveHt);
-                    // Required reach = distance from failure point to wire
+                    // Failure point is partialBase ft above ground at tree base
+                    const failurePointElev = partialBase + vd;
                     requiredReach = Math.sqrt(
                         effectiveHDWire * effectiveHDWire +
                         Math.pow(effectiveHt - failurePointElev, 2)
                     );
-                    reach = partialLength; // only the failing section sweeps
+                    reach = partialLength;
                     strikeMode = 'partial';
+                    strike = { horizontal: effectiveHDWire, verticalDiff: effectiveHt - failurePointElev, distance: requiredReach };
                 } else {
-                    const strike = computeRequiredStrikeDistance(effectiveHDWire, vd, effectiveHt);
+                    strike = computeRequiredStrikeDistance(effectiveHDWire, vd, effectiveHt);
                     requiredReach = strike.distance;
                     reach = th;
                     strikeMode = 'full';
@@ -319,6 +317,7 @@
             document.getElementById('result').classList.remove('show');
             document.getElementById('pane-calc').scrollTop = 0;
         }
+
 
 
 
