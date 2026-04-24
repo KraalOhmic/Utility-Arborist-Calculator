@@ -1,4 +1,4 @@
-﻿        // ── CALC ──
+        // ── CALC ──
         function computeRequiredStrikeDistance(horizontalFt, treeBaseElevationFt, targetElevationFt) {
             const horizontal = Math.abs(Number(horizontalFt) || 0);
             const verticalDiff = (Number(targetElevationFt) || 0) - (Number(treeBaseElevationFt) || 0);
@@ -80,15 +80,39 @@
                 return;
             }
 
+            // Partial failure mode
+            const partialActive = document.getElementById('partial-failure-wrap')?.style.display !== 'none';
+            const partialBase = partialActive ? clampNonNegative(parseFloat(document.getElementById('partial-base')?.value), 0) : 0;
+            const partialLength = partialActive ? clampNonNegative(parseFloat(document.getElementById('partial-length')?.value), 0) : 0;
+
             const results = wireData.map(w => {
                 const effectiveHt = w.ht - w.sag * sagFactor;
                 const windSwayFt = windEnabled
                     ? clampNonNegative(w.sag * sagFactor * w.blowoutK * windScale * WIND_SWAY_SAFETY_FACTOR, 0)
                     : 0;
                 const effectiveHDWire = Math.max(0, effectiveHD - windSwayFt);
-                const strike = computeRequiredStrikeDistance(effectiveHDWire, vd, effectiveHt);
-                const requiredReach = strike.distance;
-                const reach = th;
+
+                let requiredReach, reach, strikeMode;
+                if (partialActive && partialBase > 0 && partialLength > 0) {
+                    // Partial failure: arc swings from failure base point
+                    // Failure point is partialBase ft above ground at the tree base
+                    // VD shifts the tree base elevation relative to the conductor ground
+                    const failurePointElev = partialBase + vd; // elevation of failure point relative to conductor ground
+                    const strike = computeRequiredStrikeDistance(effectiveHDWire, vd - partialBase, effectiveHt);
+                    // Required reach = distance from failure point to wire
+                    requiredReach = Math.sqrt(
+                        effectiveHDWire * effectiveHDWire +
+                        Math.pow(effectiveHt - failurePointElev, 2)
+                    );
+                    reach = partialLength; // only the failing section sweeps
+                    strikeMode = 'partial';
+                } else {
+                    const strike = computeRequiredStrikeDistance(effectiveHDWire, vd, effectiveHt);
+                    requiredReach = strike.distance;
+                    reach = th;
+                    strikeMode = 'full';
+                }
+
                 const margin = requiredReach - reach;
                 const clear = margin >= w.minClr;
                 const warn = !clear && margin >= 0;
