@@ -206,7 +206,7 @@
                 <div class="res-dot" style="background:${r.color};box-shadow:0 0 6px ${r.color}88"></div>
                 <span class="res-icon">${icon}</span>
                 <span class="res-name">${r.name}</span>
-                <span class="res-verdict">${verdict}</span>
+                <span class="res-verdict">${verdict}${pBadge}</span>
               </div>
               <div class="res-metrics">
                 <div class="rmet"><div class="rmet-lbl">Eff Ht</div><div class="rmet-val">${r.effectiveHt.toFixed(1)}<span class="rmet-unit">ft</span></div></div>
