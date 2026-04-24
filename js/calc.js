@@ -153,7 +153,10 @@
                 worstMargin,
                 worstVsReq,
                 overallClear,
-                overallWarn
+                overallWarn,
+                partialActive,
+                partialBase,
+                partialLength
             };
 
             const status = overallClear ? 'clear' : (overallWarn ? 'warn' : 'strike');
@@ -161,6 +164,11 @@
             banner.className = 'overall-banner ' + status;
             document.getElementById('banner-icon').textContent = overallClear ? '✓' : (overallWarn ? '⚠' : '✕');
             document.getElementById('banner-label').textContent = overallClear ? 'All Wires Clear' : (overallWarn ? 'Marginal Clearance' : 'Strike Risk');
+            const pfBadge = document.getElementById('partial-failure-badge');
+            if (pfBadge) {
+                pfBadge.style.display = partialActive && partialBase > 0 && partialLength > 0 ? 'inline-block' : 'none';
+                pfBadge.textContent = 'PARTIAL FAILURE · ' + partialLength + 'ft from ' + partialBase + 'ft';
+            }
             document.getElementById('banner-sub').textContent = overallClear
                 ? `Closest contact: +${worstMargin.toFixed(1)} ft over required clearance`
                 : overallWarn
@@ -192,6 +200,7 @@
                 const st = r.clear ? 'clear' : (r.margin >= 0 ? 'warn' : 'strike');
                 const icon = r.clear ? '✓' : (st === 'warn' ? '⚠' : '✕');
                 const verdict = r.clear ? 'CLEAR' : (st === 'warn' ? 'MARGINAL' : 'STRIKE');
+                const pBadge = (partialActive && partialBase > 0 && partialLength > 0) ? '<span style="font-size:8px;background:rgba(255,159,28,.15);border:1px solid rgba(255,159,28,.4);border-radius:3px;padding:1px 5px;color:rgba(255,159,28,.9);margin-left:6px;vertical-align:middle">PARTIAL</span>' : '';
                 return `<div class="wire-result">
               <div class="wire-result-top ${st}">
                 <div class="res-dot" style="background:${r.color};box-shadow:0 0 6px ${r.color}88"></div>
