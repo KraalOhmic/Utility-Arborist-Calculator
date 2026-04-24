@@ -30,6 +30,11 @@
 
             const validationMessages = [];
             const invalidFields = [];
+
+            // Partial failure — declare early for validation
+            const partialActive = document.getElementById('partial-failure-wrap')?.style.display !== 'none';
+            const partialBase = partialActive ? clampNonNegative(parseFloat(document.getElementById('partial-base')?.value), 0) : 0;
+            const partialLength = partialActive ? clampNonNegative(parseFloat(document.getElementById('partial-length')?.value), 0) : 0;
             const hdRaw = parseFloat(document.getElementById('hd').value);
             const vdRaw = parseFloat(document.getElementById('vd').value);
             const thRaw = parseFloat(document.getElementById('th').value);
@@ -84,11 +89,6 @@
                 showValidation('calc-validation', validationMessages, invalidFields);
                 return;
             }
-
-            // Partial failure mode
-            const partialActive = document.getElementById('partial-failure-wrap')?.style.display !== 'none';
-            const partialBase = partialActive ? clampNonNegative(parseFloat(document.getElementById('partial-base')?.value), 0) : 0;
-            const partialLength = partialActive ? clampNonNegative(parseFloat(document.getElementById('partial-length')?.value), 0) : 0;
 
             const results = wireData.map(w => {
                 const effectiveHt = w.ht - w.sag * sagFactor;
