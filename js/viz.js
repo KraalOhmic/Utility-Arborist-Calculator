@@ -497,6 +497,10 @@
                 ctx.setLineDash([]);
             });
             // CALCULATE STRIKE HIGHLIGHT — partial failure aware
+            const pBaseIso = r.partialBase || 0;
+            const pLenIso = r.partialLength || 0;
+            const pOnIso = r.partialActive && pBaseIso > 0 && pLenIso > 0;
+
             const pivotY = pOnIso ? vd + pBaseIso : vd;
             const reachLen = pOnIso ? pLenIso : th;
 
@@ -545,10 +549,6 @@
             }
 
             // --- HIGHLIGHTED TRUNK + STRIKE MEASUREMENT ---
-            const pBaseIso = r.partialBase || 0;
-            const pLenIso = r.partialLength || 0;
-            const pOnIso = r.partialActive && pBaseIso > 0 && pLenIso > 0;
-
             const leanRad = (r.lean || 0) * Math.PI / 180;
             const sinL = Math.sin(leanRad), cosL = Math.cos(leanRad);
             const treeStroke = 5;
